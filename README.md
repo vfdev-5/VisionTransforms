@@ -92,6 +92,14 @@ def data_transform(datapoint):
     return dtf(datapoint)
 ```
 
+## Random state controlling
+
+All random parameters should use `random` built-in module.
+
+All transformation `__call__` functions receive input and rng (can be None) as argument and setup random state before
+transforming the data.
+
+
 ## Backends 
 
 Image/Mask reading and transformations can be implemented using various backends: 
