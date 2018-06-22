@@ -39,51 +39,45 @@ class DataTransform(vt.BaseTransform):
     
     def __init__(self):
         
-        random_affine_model = {
-            'translate': (0.3, 0.3), 
-            'scale': (0.75, 1.2), 
+        translate_scale_params = {
+            'translate': (0.2, 0.2),
+            'scale': (0.7, 1.3)
         }
+        self.random_affine = vt.RandomAffine(degrees=0, **translate_scale_params, resample=PIL.Image.BICUBIC)
+        self.mask_random_affine = vt.RandomAffine(degrees=0, **translate_scale_params, resample=PIL.Image.NEAREST)        
+        self.bbox_random_affine = vt.BBoxRandomAffine(input_canvas_size=310, **translate_scale_params)
         
-        self.img_random_affine = vt.RandomAffine(**random_affine_model, resample=PIL.Image.BILINEAR)
-        self.mask_random_affine = vt.RandomAffine(**random_affine_model, resample=PIL.Image.NEAREST)
-        self.bbox_random_affine = vt.BBoxRandomAffine(**random_affine_model)
-        
-        self.random_crop = vt.RandomCrop(size=224, padding=0)
-        self.bbox_random_crop = vt.BBoxRandomCrop(size=224, canvas_size=(512, 512), padding=0)
+        self.random_crop = vt.RandomCrop(size=224)
+        self.bbox_random_crop = vt.BBoxRandomCrop(input_canvas_size=310, size=224)
         
         self.img_geom = vt.Sequential(
-            self.img_random_affine,
+            self.random_affine,
             self.random_crop,
         )
-        
         self.mask_geom = vt.Sequential(
             self.mask_random_affine,
             self.random_crop,
-        )
-        
+        )        
         self.bbox_geom = vt.Sequential(
             self.bbox_random_affine,
             self.bbox_random_crop,
-        )
+        )        
+        self.img_color = vt.ColorJitter(hue=0.5, saturation=1.0)
         
-        self.img_color = vt.ColorJitter(hue=0.2, saturation=0.2)
-        
-    def __call__(self, datapoint):
-        
-        rng = self.get_rng()
+    def __call__(self, datapoint, rng=None):
         
         x, y = datapoint
         img_rgb, scalars = x
         mask, bboxes, labels = y
-                
+
         t_img_rgb = self.img_geom(img_rgb, rng)
-        t_img_rgb = self.img_color(t_img_rgb, rng)
-                       
+        t_img_rgb = self.img_color(t_img_rgb)
+
         t_mask = self.mask_geom(mask, rng)        
         t_bboxes = self.bbox_geom(bboxes, rng)    
-    
+        
         return (t_img_rgb, scalars), (t_mask, t_bboxes, labels)
-
+        
 
 dtf = DataTransform()
 

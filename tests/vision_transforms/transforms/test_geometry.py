@@ -1,4 +1,4 @@
-
+import random
 import pytest
 
 import numpy as np
@@ -29,8 +29,8 @@ def test_random_crop(F):
     t_pil_img = t(pil_img)
     assert t_pil_img.size == (50, 50) and t_pil_img.mode == pil_img.mode
 
+    rng = random.getstate()
     t = RandomCrop(size=50)
-    rng = t.get_rng()
     params = t.get_params((100, 120), (50, 50))
     t_pil_img = t(pil_img, rng)
     true_t_pil_img = F.crop(pil_img, *params)
@@ -40,8 +40,8 @@ def test_random_crop(F):
     t_pil_img2 = t(pil_img, rng)
     assert t_pil_img2 == true_t_pil_img
 
+    rng = random.getstate()
     t = RandomCrop(size=(50, 50))
-    rng = t.get_rng()
     params = t.get_params((100, 120), (50, 50))
     t_pil_img = t(pil_img, rng)
     true_t_pil_img = F.crop(pil_img, *params)
@@ -66,8 +66,8 @@ def test_bbox_random_crop():
     import random
     random.seed(seed)
 
+    rng = random.getstate()
     t = BBoxRandomCrop(input_canvas_size=input_canvas, size=output_canvas)
-    rng = t.get_rng()
     params = t.get_params(input_canvas, output_canvas)
     t_bbox = t(input_bbox, rng)
     B.check_type(t_bbox)

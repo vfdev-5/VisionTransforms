@@ -150,7 +150,7 @@ def adjust_brightness(img, brightness_factor):
         numpy.ndarray
     """
     check_type(img)
-
+    assert img.shape[-1] == 3, "Image should have 3 channels, RGB"
     degenerate = np.zeros_like(img)
     return _blend(degenerate, img, brightness_factor)
 
@@ -168,7 +168,7 @@ def adjust_contrast(img, contrast_factor):
         numpy.ndarray
     """
     check_type(img)
-
+    assert img.shape[-1] == 3, "Image should have 3 channels, RGB"
     gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
     mean = int(gray.mean() + 0.5)
     degenerate = np.ones_like(img) * mean
@@ -188,6 +188,7 @@ def adjust_saturation(img, saturation_factor):
         numpy.ndarray
     """
     check_type(img)
+    assert img.shape[-1] == 3, "Image should have 3 channels, RGB"
     c = img.shape[-1]
     gray = np.expand_dims(cv2.cvtColor(img, cv2.COLOR_RGB2GRAY), axis=-1)
     gray = cv2.merge([gray for _ in range(c)])
@@ -210,6 +211,7 @@ def adjust_hue(img, hue_factor):
 
     Args:
         img (numpy.ndarray): input image to be adjusted. Image should be in RGB mode as we compute hue channel of it.
+            Image dtype can be uint8 or float32 with range [0.0, 1.0] (min/max are not checked for speed).
         hue_factor (float):  How much to shift the hue channel. Should be in
             [-0.5, 0.5]. 0.5 and -0.5 give complete reversal of hue channel in
             HSV space in positive and negative direction respectively.
@@ -223,6 +225,7 @@ def adjust_hue(img, hue_factor):
         raise ValueError('hue_factor is not in [-0.5, 0.5].'.format(hue_factor))
 
     check_type(img)
+    assert img.shape[-1] == 3, "Image should have 3 channels, RGB"
 
     # check input according to opencv cvtColor
     # if uint8 -> Hue is between [0, 180]
@@ -230,22 +233,20 @@ def adjust_hue(img, hue_factor):
     # otherwise raise TypeError
 
     uint8_type = img.dtype == np.uint8
-    float32_type = img.dtype == np.float32 and np.max(img) <= 1.0 and np.min(img) >= 0.0
+    float32_type = img.dtype == np.float32
 
     assert uint8_type or float32_type, \
         "Input image should be uint8 or float32 with range [0.0, 1.0]"
 
-    hsv_img = cv2.cvtColor(img, cv2.COLOR_RGB2HSV).astype(np.float32)
     if uint8_type:
-        hsv_img[:, :, 0] *= 2.0
-        hsv_img[:, :, 1:] /= 255.0
+        img = img.astype(np.float32) / 255.0
 
-    hsv_img[:, :, 0] = (hsv_img[:, :, 0] + (hue_factor + 0.5) * 360.0) % 360.0
+    hsv_img = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
 
-    if uint8_type:
-        hsv_img[:, :, 0] /= 2.0
-        hsv_img[:, :, 1:] *= 255.0
-        hsv_img = hsv_img.astype(np.uint8)
-
+    hsv_img[:, :, 0] = (hsv_img[:, :, 0] + hue_factor * 360.0) % 360.0
     out_img = cv2.cvtColor(hsv_img, cv2.COLOR_HSV2RGB)
+
+    if uint8_type:
+        out_img = (out_img * 255.0).astype(np.uint8)
+
     return out_img

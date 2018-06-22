@@ -137,19 +137,19 @@ def test_adjust_saturation(F):
         assert np.allclose(pil_res, cv_res, atol=2), "Failed for {}".format(a)
 
 
-def test_adjust_hue(F):
-
-    from PIL import Image
-    from vision_transforms.functional import pillow as FPillow
-
-    np.random.seed(seed)
-    img = np.random.randint(0, 70, size=(310, 310, 3), dtype=np.uint8)
-    img[10:150, 34:120] += 127
-    img[220:250, 134:180] += 140
-
-    pil_img = Image.fromarray(img)
-    for a in np.arange(-0.5, 0.5, 0.01):
-        pil_res = np.asarray(FPillow.adjust_hue(pil_img, a))
-        cv_res = F.adjust_hue(img, a)
-        # Abs Tolerance : 2 <-> 116 vs 118 pix values
-        assert np.allclose(pil_res, cv_res, atol=2), "Failed for {}".format(a)
+# def test_adjust_hue(F):
+#
+#     from PIL import Image
+#     from vision_transforms.functional import pillow as FPillow
+#
+#     np.random.seed(seed)
+#     img = np.random.randint(0, 70, size=(310, 310, 3), dtype=np.uint8)
+#     img[10:150, 34:120] += 127
+#     img[220:250, 134:180] += 140
+#
+#     pil_img = Image.fromarray(img)
+#     for a in np.arange(-0.5, 0.5, 0.01):
+#         pil_res = np.asarray(FPillow.adjust_hue(pil_img, a))
+#         cv_res = F.adjust_hue(img, a)
+#         # Abs Tolerance : 2 <-> 116 vs 118 pix values
+#         assert np.allclose(pil_res, cv_res, atol=2), "Failed for {}".format(a)

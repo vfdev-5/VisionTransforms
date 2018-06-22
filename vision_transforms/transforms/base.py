@@ -18,14 +18,6 @@ class BaseTransform(object):
         if rng is not None:
             random.setstate(rng)
 
-    def get_rng(self):
-        """Method to get random state
-
-        Returns:
-            RNG state
-        """
-        return random.getstate()
-
     @abstractmethod
     def __call__(self, x, rng=None):
         pass
