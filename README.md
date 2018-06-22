@@ -1,11 +1,17 @@
-# Vision transforms new concepts for PyTorch
+# Another concepts for vision transforms for PyTorch/Torchvision
+
+Idea is to provide basic brick to transform image/mask/bounding box/keypoints and user composes the transformation/augmentations according to the input datapoint.
 
 Transforms can be made similar to models that inherit of `torch.nn.Module`.
 
 Simple transformations are like `nn.Sequential`, more complicated should inherit from base transformation and 
 overload `__call__` method.
 
-## Simple example
+
+## Transformation use-cases
+
+
+### Simple example
 
 Datapoint is `(img, label)`:
 
@@ -22,7 +28,7 @@ def data_transform(datapoint):
 
 This case is almost the same as torchvision
 
-## Another example
+### Another example
 
 More complicated example, datapoint is `((img, scalars), (mask, bboxes, labels))` (e.g. Mask-RCNN)
 
@@ -85,4 +91,21 @@ dtf = DataTransform()
 def data_transform(datapoint):
     return dtf(datapoint)
 ```
+
+## Backends 
+
+Image/Mask reading and transformations can be implemented using various backends: 
+- Pillow
+- Opencv/Numpy
+- torch.tensor (optionally)
+
+Bounding boxes/Keypoints are defined as `numpy.ndarray` and operations can be done using different backends:
+- numpy
+- torch.tensor
+
+
+## Concepts in practice
+
+See the [example](https://github.com/vfdev-5/VisionTransforms/blob/master/examples/basic.ipynb)
+
 
