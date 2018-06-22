@@ -92,20 +92,23 @@ def test_pad():
     ])
     padding = 5
     true_padded_bbox = input_bbox.copy()
-    true_padded_bbox[:, :2] -= padding
-    true_padded_bbox[:, 2:] += padding
+    true_padded_bbox[:, :] += padding
 
     padded_bbox = B.pad(input_bbox, padding=padding)
     B.check_type(padded_bbox)
     assert np.all(padded_bbox == true_padded_bbox)
     assert id(padded_bbox) == id(input_bbox)
+    assert np.all(np.abs(true_padded_bbox[:, 0] - true_padded_bbox[:, 2]) ==
+                  np.abs(padded_bbox[:, 0] - padded_bbox[:, 2]))
+    assert np.all(np.abs(true_padded_bbox[:, 1] - true_padded_bbox[:, 3]) ==
+                  np.abs(padded_bbox[:, 1] - padded_bbox[:, 3]))
 
     padded_bbox = B.pad(input_bbox, padding=padding, inplace=False)
     assert id(padded_bbox) != id(input_bbox)
 
     padding = (5, 7)
     true_padded_bbox = input_bbox.copy()
-    true_padded_bbox[:, :2] -= (padding[0], padding[1])
+    true_padded_bbox[:, :2] += (padding[0], padding[1])
     true_padded_bbox[:, 2:] += (padding[0], padding[1])
 
     padded_bbox = B.pad(input_bbox, padding=padding)
@@ -114,10 +117,10 @@ def test_pad():
 
     padding = (4, 5, 7, 8)
     true_padded_bbox = input_bbox.copy()
-    true_padded_bbox[:, 0] -= padding[0]
-    true_padded_bbox[:, 1] -= padding[1]
-    true_padded_bbox[:, 2] += padding[2]
-    true_padded_bbox[:, 3] += padding[3]
+    true_padded_bbox[:, 0] += padding[0]
+    true_padded_bbox[:, 1] += padding[1]
+    true_padded_bbox[:, 2] += padding[0]
+    true_padded_bbox[:, 3] += padding[1]
 
     padded_bbox = B.pad(input_bbox, padding=padding)
     B.check_type(padded_bbox)

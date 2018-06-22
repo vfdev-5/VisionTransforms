@@ -34,10 +34,8 @@ class DataTransform(vt.BaseTransform):
     def __init__(self):
         
         random_affine_model = {
-            'degrees': (-45, 45), 
             'translate': (0.3, 0.3), 
             'scale': (0.75, 1.2), 
-            'shear': (-15, 15)
         }
         
         self.img_random_affine = vt.RandomAffine(**random_affine_model, resample=PIL.Image.BILINEAR)
@@ -78,7 +76,7 @@ class DataTransform(vt.BaseTransform):
         t_mask = self.mask_geom(mask, rng)        
         t_bboxes = self.bbox_geom(bboxes, rng)    
     
-        return ((t_img_rgb, scalars), (t_mask, t_bboxes, labels))
+        return (t_img_rgb, scalars), (t_mask, t_bboxes, labels)
 
 
 dtf = DataTransform()

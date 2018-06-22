@@ -66,7 +66,7 @@ def test_bbox_random_crop():
     import random
     random.seed(seed)
 
-    t = BBoxRandomCrop(input_canvas_size=input_canvas, output_canvas_size=output_canvas)
+    t = BBoxRandomCrop(input_canvas_size=input_canvas, size=output_canvas)
     rng = t.get_rng()
     params = t.get_params(input_canvas, output_canvas)
     t_bbox = t(input_bbox, rng)
@@ -78,6 +78,6 @@ def test_bbox_random_crop():
     params2 = t.get_params(input_canvas, output_canvas)
     assert params == params2
 
-    t2 = BBoxRandomCrop(input_canvas_size=input_canvas[0], output_canvas_size=output_canvas[0])
+    t2 = BBoxRandomCrop(input_canvas_size=input_canvas[0], size=output_canvas[0])
     t_bbox2 = t2(input_bbox, rng)
     assert np.all(t_bbox2 == true_t_bbox)
