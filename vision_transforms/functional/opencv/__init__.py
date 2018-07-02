@@ -243,7 +243,7 @@ def adjust_hue(img, hue_factor):
 
     hsv_img = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
 
-    hsv_img[:, :, 0] = (hsv_img[:, :, 0] + hue_factor * 360.0) % 360.0
+    hsv_img[:, :, 0] = (hsv_img[:, :, 0] + hue_factor * 359.0) % 360.0
     out_img = cv2.cvtColor(hsv_img, cv2.COLOR_HSV2RGB)
 
     if uint8_type:
