@@ -99,11 +99,11 @@ transforming the data.
 Image/Mask reading and transformations can be implemented using various backends: 
 - Pillow
 - Opencv/Numpy
-- torch.tensor (optionally)
+- torch.tensor (optionally) **NOT IMPLEMENTED YET**
 
 Bounding boxes/Keypoints are defined as `numpy.ndarray` and operations can be done using different backends:
 - numpy
-- torch.tensor
+- torch.tensor (optionally) **NOT IMPLEMENTED YET**
 
 
 ## Concepts in practice
