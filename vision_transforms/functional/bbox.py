@@ -11,11 +11,11 @@ def check_type(bboxes):
     """Check input bounding boxes type. Raises TypeError if input is incorrect
     """
     if not (isinstance(bboxes, np.ndarray) and bboxes.ndim == 2 and bboxes.shape[1] == 4):
-        raise TypeError("Input bbox should be numpy.ndarray of type [[x1, y1, x2, x2], ...],"
+        raise TypeError("Input bbox should be numpy.ndarray of type [[x1, y1, x2, y2], ...],"
                         "but given '{}'".format(type(bboxes)))
     # Check xyxy type:
     if not (np.all(bboxes[:, 0] <= bboxes[:, 2]) and np.all(bboxes[:, 1] <= bboxes[:, 3])):
-        raise TypeError("Input bboxes should be all of type [x1, y1, x2, x2] with x1 <= x2 and y1 <= y2")
+        raise TypeError("Input bboxes should be all of type [x1, y1, x2, y2] with x1 <= x2 and y1 <= y2")
 
 
 def crop(bboxes, x, y, w, h):
@@ -36,7 +36,7 @@ def crop(bboxes, x, y, w, h):
     pt = np.array([x, y, x, y])
     a_min = np.array([0, 0, 0, 0])
     a_max = np.array([w, h, w, h])
-    clipped_bboxes = np.clip(bboxes - pt, a_min=a_min, a_max=a_max, )
+    clipped_bboxes = np.clip(bboxes - pt, a_min=a_min, a_max=a_max)
     return clipped_bboxes
 
 

@@ -39,6 +39,16 @@ class BaseTransformWithCanvas(BaseTransform):
         else:
             self.input_canvas_size = input_canvas_size
 
+    def _check_input_canvas_size(self, input_canvas_size):
+        if input_canvas_size is None and self.input_canvas_size is None:
+            raise ValueError("Parameter input_canvas_size is not specified")
+
+    def _get_input_canvas_size(self, input_canvas_size):
+        input_canvas_size = self.input_canvas_size if input_canvas_size is None else input_canvas_size
+        if isinstance(input_canvas_size, numbers.Number):
+            return [int(input_canvas_size), int(input_canvas_size)]
+        return list(input_canvas_size)
+
 
 class Sequential(BaseTransform):
 
@@ -48,9 +58,9 @@ class Sequential(BaseTransform):
         for idx, t in enumerate(args):
             self._transforms.append(t)
 
-    def __call__(self, x, rng=None):
+    def __call__(self, x, rng=None, **kwargs):
         for t in self._transforms:
-            x = t(x, rng)
+            x = t(x, rng, **kwargs)
         return x
 
     def __len__(self):
@@ -85,5 +95,7 @@ class BBoxLambda(BaseTransformWithCanvas):
         super(BBoxLambda, self).__init__(input_canvas_size)
         self.func = func
 
-    def __call__(self, bboxes, rng=None):
-        return self.func(bboxes, self.input_canvas_size, self.rng)
+    def __call__(self, bboxes, rng=None, input_canvas_size=None):
+        self._check_input_canvas_size(input_canvas_size)
+        input_canvas_size = self._get_input_canvas_size(input_canvas_size)
+        return self.func(bboxes, input_canvas_size, self.rng)

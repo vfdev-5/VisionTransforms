@@ -64,7 +64,7 @@ class RandomCrop(BaseTransform):
             img = F.pad(img, padding=self.padding, mode='constant')
 
         ih, iw, _ = F.shape(img)
-        x, y, w, h = self.get_params((ih, iw), self.size)
+        x, y, h, w = self.get_params((ih, iw), self.size)
         return F.crop(img, x, y, w, h)
 
 
@@ -73,12 +73,14 @@ class BBoxRandomCrop(BaseTransformWithCanvas, RandomCrop):
 
     """
 
-    def __init__(self, input_canvas_size, size, padding=None):
+    def __init__(self, size, input_canvas_size=None, padding=None):
         """
 
         Args:
-            input_canvas_size (int or sequence): input canvas size (h, w), e.g. corresponding image size
             size (int or sequence): output canvas size (h, w)
+            input_canvas_size (int or sequence, optional): input canvas size (h, w),
+                e.g. corresponding image size. If None it should be then specified at
+                `__call__` method, otherwise exception is raised.
             padding (int or sequence, optional): Optional padding on each border
                 of the image. Default is 0, i.e no padding. If a sequence of length
                 4 is provided, it is used to pad left, top, right, bottom borders
@@ -87,18 +89,18 @@ class BBoxRandomCrop(BaseTransformWithCanvas, RandomCrop):
         """
         super(BBoxRandomCrop, self).__init__(input_canvas_size=input_canvas_size, size=size, padding=padding)
 
-        if self.padding is not None:
-            pad_left, pad_top, pad_right, pad_bottom = B._get_ltrb_padding(self.padding)
-            self.input_canvas_size[1] += (pad_left + pad_right)
-            self.input_canvas_size[0] += (pad_top + pad_bottom)
+    def __call__(self, bboxes, rng=None, input_canvas_size=None):
 
-    def __call__(self, bboxes, rng=None):
-
+        self._check_input_canvas_size(input_canvas_size)
+        input_canvas_size = self._get_input_canvas_size(input_canvas_size)
         if self.padding is not None:
             bboxes = B.pad(bboxes, padding=self.padding, inplace=False)
+            pad_left, pad_top, pad_right, pad_bottom = B._get_ltrb_padding(self.padding)            
+            input_canvas_size[1] += (pad_left + pad_right)
+            input_canvas_size[0] += (pad_top + pad_bottom)
 
         self._setup_rng(rng)
-        x, y, w, h = self.get_params(self.input_canvas_size, self.size)
+        x, y, h, w = self.get_params(input_canvas_size, self.size)
         return B.crop(bboxes, x, y, w, h)
 
 
@@ -118,7 +120,8 @@ class RandomAffine(BaseTransform):
         shear (sequence or float or int, optional): Range of degrees to select from.
             If degrees is a number instead of sequence like (min, max), the range of degrees
             will be (-degrees, +degrees). Will not apply shear by default
-        resample (int, optional): This parameter depends on backend
+        resample (int, optional): This parameter depends on backend. For example, if the backend is
+            'pillow', resample can be `PIL.Image.BICUBIC`.
         fillcolor (int): Optional fill color for the area outside the transform in the output image.
             If backend is `pillow`, this option is enabled for Pillow>=5.0.0
     """
@@ -198,7 +201,6 @@ class BBoxRandomAffine(BaseTransformWithCanvas, RandomAffine):
     """Random affine transformation of the bounding box keeping canvas center invariant
 
     Args:
-        input_canvas_size (int or sequence): input canvas size (h, w), e.g. corresponding image size
         degrees (sequence or float or int): Unused as does not make sense. Remains for compatibility with other affine
             transformations
         translate (tuple, optional): tuple of maximum absolute fraction for horizontal
@@ -209,15 +211,19 @@ class BBoxRandomAffine(BaseTransformWithCanvas, RandomAffine):
             randomly sampled from the range a <= scale <= b. Will keep original scale by default.
         shear (sequence or float or int, optional): Unused as does not make sense. Remains for compatibility with
             other affine transformations
+        input_canvas_size (int or sequence, optional): input canvas size (h, w),
+            e.g. corresponding image size. If None it should be then specified at
+            `__call__` method, otherwise exception is raised.
     """
 
-    def __init__(self, input_canvas_size, degrees=0, translate=None, scale=None, shear=None):
+    def __init__(self, degrees=0, translate=None, scale=None, shear=None, input_canvas_size=None):
         super(BBoxRandomAffine, self).__init__(input_canvas_size=input_canvas_size,
                                                degrees=0, translate=translate, scale=scale, shear=None)
 
-    def __call__(self, bboxes, rng=None):
+    def __call__(self, bboxes, rng=None, input_canvas_size=None):
+        self._check_input_canvas_size(input_canvas_size)
+        input_canvas_size = self._get_input_canvas_size(input_canvas_size)
         self._setup_rng(rng)
-        ret = self.get_params(self.degrees, self.translate, self.scale, self.shear, self.input_canvas_size)
-        center = (self.input_canvas_size[0] * 0.5 + 0.5, self.input_canvas_size[1] * 0.5 + 0.5)
+        ret = self.get_params(self.degrees, self.translate, self.scale, self.shear, input_canvas_size)
+        center = (input_canvas_size[0] * 0.5 + 0.5, input_canvas_size[1] * 0.5 + 0.5)
         return B.affine(bboxes, center, *ret)
-
